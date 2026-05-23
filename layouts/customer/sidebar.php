@@ -8,6 +8,6 @@
     <a href="#"><i class="fa-solid fa-file-invoice-dollar"></i> Tagihan Premi</a>
     <a href="#"><i class="fa-solid fa-file-medical"></i> Klaim Medis</a>
     <a href="#"><i class="fa-solid fa-hospital"></i> Faskes Rekanan</a>
-    <a href="<?php echo $base_url; ?>/index.php" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);"><i class="fa-solid fa-earth-asia"></i> Halaman Publik</a>
+    <a href="<?php echo $base_url; ?>/index.php" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1);"><i class="fa-solid fa-earth-asia"></i> Beranda </a>
     <a href="<?php echo $base_url; ?>/logout.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
 </div>

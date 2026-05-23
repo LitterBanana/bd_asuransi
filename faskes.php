@@ -3,54 +3,98 @@
     include "layouts/public/header.php"; 
 ?>
 
-<div class="page-header">
-    <h1>Fasilitas Kesehatan Rekanan</h1>
-    <p>Kami bekerja sama dengan ratusan rumah sakit dan klinik terpercaya di seluruh Indonesia.</p>
+<link rel="stylesheet" href="layouts/css/style.css?v=<?php echo time(); ?>">
+
+<div class="faskes-header-alt">
+    <h1><i class="fa-solid fa-hospital" style="color: var(--color-aqua); margin-right: 10px;"></i>Fasilitas Kesehatan</h1>
+    <p>Temukan dokter dan rumah sakit terbaik di dekat Anda dengan fasilitas tanpa uang muka (cashless) dari jaringan AsuransiKu.</p>
 </div>
 
-<section class="page-content" style="text-align: center;">
-    <h2 style="margin-bottom: 20px; color: var(--color-dark);">Temukan Dokter dan Rumah Sakit Terdekat</h2>
-    <p style="max-width: 600px; margin: 0 auto 40px; color: #666;">
-        Jaringan fasilitas kesehatan AsuransiKu terus bertumbuh untuk memastikan Anda selalu mendapatkan penanganan terbaik dengan fasilitas bebas uang muka (cashless).
-    </p>
-    
-    <div style="background: var(--color-light); padding: 40px; border-radius: 16px; display: inline-block; width: 100%; max-width: 800px; margin-bottom: 50px;">
-        <i class="fa-solid fa-map-location-dot" style="font-size: 60px; color: var(--color-aqua); margin-bottom: 20px;"></i>
-        <h3>Daftar Fasilitas Kesehatan (Live Data)</h3>
-        <p style="margin-bottom: 20px; color: #555;">Berikut adalah beberapa fasilitas kesehatan yang telah tergabung dalam jaringan kami:</p>
-        
-        <div style="text-align: left; overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-radius: 8px; overflow: hidden;">
-                <thead>
-                    <tr style="background-color: var(--color-dark); color: white;">
-                        <th style="padding: 15px; text-align: left;">Nama Faskes</th>
-                        <th style="padding: 15px; text-align: left;">Tingkat</th>
-                        <th style="padding: 15px; text-align: left;">Kota</th>
-                        <th style="padding: 15px; text-align: left;">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                        $query = "SELECT * FROM faskes WHERE status_kerjasama = 'Aktif' ORDER BY kota ASC";
-                        $result = mysqli_query($conn, $query);
-
-                        if(mysqli_num_rows($result) > 0) {
-                            while($row = mysqli_fetch_assoc($result)) {
-                                echo "<tr style='border-bottom: 1px solid #eee;'>";
-                                echo "<td style='padding: 15px;'><strong>" . htmlspecialchars($row['nama_faskes']) . "</strong><br><small style='color: #888;'>" . htmlspecialchars($row['alamat']) . "</small></td>";
-                                echo "<td style='padding: 15px;'><span style='background: var(--color-light); color: var(--color-slate); padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;'>" . htmlspecialchars($row['tingkat_faskes']) . "</span></td>";
-                                echo "<td style='padding: 15px;'>" . htmlspecialchars($row['kota']) . "</td>";
-                                echo "<td style='padding: 15px;'><span style='color: #4CAF50; font-weight: bold;'><i class='fa-solid fa-check-circle'></i> " . htmlspecialchars($row['status_kerjasama']) . "</span></td>";
-                                echo "</tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='4' style='padding: 20px; text-align: center;'>Tidak ada faskes rekanan aktif.</td></tr>";
-                        }
-                    ?>
-                </tbody>
-            </table>
-        </div>
+<div class="faskes-search-container">
+    <div class="faskes-search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Cari nama rumah sakit, klinik, atau kota...">
     </div>
-</section>
+</div>
+
+<div class="faskes-grid" id="faskesGrid">
+    <?php
+        $query = "SELECT * FROM faskes WHERE status_kerjasama = 'Aktif' ORDER BY kota ASC";
+        $result = $conn->query($query);
+
+        if($result && $result->rowCount() > 0) {
+            while($row = $result->fetch()) {
+                $faskes_name = htmlspecialchars($row['nama_faskes']);
+                $faskes_type = htmlspecialchars($row['tingkat_faskes']);
+                $faskes_city = htmlspecialchars($row['kota']);
+                $faskes_address = htmlspecialchars($row['alamat']);
+                $faskes_status = htmlspecialchars($row['status_kerjasama']);
+                
+                // For search filtering
+                $search_data = strtolower($faskes_name . " " . $faskes_city . " " . $faskes_type);
+                ?>
+                <div class="faskes-card" data-search="<?php echo $search_data; ?>">
+                    <div class="faskes-badges">
+                        <span class="faskes-badge-type"><?php echo $faskes_type; ?></span>
+                        <span class="faskes-badge-status"><i class="fa-solid fa-circle-check"></i> <?php echo $faskes_status; ?></span>
+                    </div>
+                    <h3><?php echo $faskes_name; ?></h3>
+                    <div class="faskes-info">
+                        <i class="fa-solid fa-city"></i>
+                        <span><?php echo $faskes_city; ?></span>
+                    </div>
+                    <div class="faskes-info">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span><?php echo $faskes_address; ?></span>
+                    </div>
+                </div>
+                <?php
+            }
+        } else {
+            echo "<div class=" . '"faskes-empty"' . "><i class=" . '"fa-solid fa-hospital-user"' . " style=" . '"font-size: 40px; color: #cbd5e1; margin-bottom: 15px;"' . "></i><br>Belum ada fasilitas kesehatan rekanan yang aktif.</div>";
+        }
+    ?>
+</div>
+
+<script>
+    // Live Search Functionality
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('searchInput');
+        const cards = document.querySelectorAll('.faskes-card');
+        const grid = document.getElementById('faskesGrid');
+        
+        if(searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                const term = e.target.value.toLowerCase();
+                let hasVisible = false;
+                
+                cards.forEach(card => {
+                    const text = card.getAttribute('data-search');
+                    if(text.includes(term)) {
+                        card.style.display = 'flex';
+                        hasVisible = true;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // Handle empty state
+                let emptyMsg = document.getElementById('empty-search-msg');
+                if(!hasVisible) {
+                    if(!emptyMsg) {
+                        emptyMsg = document.createElement('div');
+                        emptyMsg.id = 'empty-search-msg';
+                        emptyMsg.className = 'faskes-empty';
+                        emptyMsg.innerHTML = '<i class="fa-solid fa-search" style="font-size: 40px; color: #cbd5e1; margin-bottom: 15px;"></i><br>Fasilitas kesehatan tidak ditemukan.';
+                        grid.appendChild(emptyMsg);
+                    }
+                    emptyMsg.style.display = 'block';
+                } else if(emptyMsg) {
+                    emptyMsg.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
 
 <?php include "layouts/public/footer.php"; ?>

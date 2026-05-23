@@ -72,6 +72,8 @@ trigger: always_on
 
 - gunakan style.css untuk konsistensi tampilan
 - Kamu Boleh copy css yang sudah ada di folder `/layouts/css` dan sesuaikan dengan kebutuhan
+- gunakan script.js untuk konsistensi tampilan
+- Kamu boleh copy js yang sudah ada di folder 'layouts/js' dan sesuaikan dengan kebutuhan
 
 ## 14. layout admin(layouts/admin)
 

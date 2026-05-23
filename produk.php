@@ -12,10 +12,10 @@
     <div class="products-grid">
         <?php
             $query = "SELECT * FROM produk_asuransi ORDER BY premi_dasar ASC";
-            $result = mysqli_query($conn, $query);
+            $result = $conn->query($query);
 
-            if(mysqli_num_rows($result) > 0) {
-                while($row = mysqli_fetch_assoc($result)) {
+            if($result && $result->rowCount() > 0) {
+                while($row = $result->fetch()) {
                     $nama_produk = htmlspecialchars($row['nama_produk']);
                     $jenis_kategori = htmlspecialchars($row['jenis_kategori']);
                     $limit = number_format($row['limit_tahunan'], 0, ',', '.');
@@ -39,7 +39,11 @@
                 <li><i class="fa-solid fa-check"></i> Perlindungan Komprehensif</li>
                 <li><i class="fa-solid fa-check"></i> Akses Jaringan Faskes Luas</li>
             </ul>
-            <a href="register.php" class="<?php echo ($jenis_kategori == 'Keluarga') ? 'btn btn-solid' : 'btn btn-outline'; ?>" style="width: 100%; text-align: center;">Pilih Paket</a>
+            <?php if(isset($_SESSION['role']) && strtolower($_SESSION['role']) == 'customer'): ?>
+                <a href="customer/konfirmasi_paket.php?id_produk=<?php echo $row['id_produk']; ?>" class="<?php echo ($jenis_kategori == 'Keluarga') ? 'btn btn-solid' : 'btn btn-outline'; ?>" style="width: 100%; text-align: center;">Pilih Paket</a>
+            <?php else: ?>
+                <a href="login.php" class="<?php echo ($jenis_kategori == 'Keluarga') ? 'btn btn-solid' : 'btn btn-outline'; ?>" style="width: 100%; text-align: center;">Pilih Paket</a>
+            <?php endif; ?>
         </div>
         <?php 
                 }

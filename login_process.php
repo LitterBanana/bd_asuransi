@@ -9,12 +9,10 @@
 
         // Menggunakan prepared statements untuk mencegah SQL Injection
         $stmt = $conn->prepare("SELECT id_user, username, role FROM users WHERE username = ? AND password = ?");
-        $stmt->bind_param("ss", $username, $password_hashed);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $stmt->execute([$username, $password_hashed]);
+        $row = $stmt->fetch();
 
-        if($result->num_rows > 0){
-            $row = $result->fetch_assoc();
+        if($row){
             session_start();
             $_SESSION['id_user'] = $row['id_user'];
             $_SESSION['username'] = $row['username'];
@@ -34,7 +32,7 @@
         }else{
             header("Location: login.php?error=1");
         }
-        $stmt->close();
+        $stmt = null;
     } else {
         header("Location: login.php");
     }

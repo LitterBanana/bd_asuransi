@@ -1,7 +1,8 @@
 -- ==============================================================================
 -- 1. SETUP DATABASE
 -- ==============================================================================
-CREATE DATABASE IF NOT EXISTS asuransi;
+DROP DATABASE IF EXISTS asuransi;
+CREATE DATABASE asuransi;
 USE asuransi;
 
 -- ==============================================================================
@@ -102,8 +103,10 @@ CREATE TABLE pembayaran_premi (
     no_tagihan VARCHAR(50) NOT NULL,
     tanggal_bayar DATETIME NOT NULL,
     nominal_bayar DECIMAL(10,2) NOT NULL,
-    metode_bayar ENUM('Transfer Bank', 'Virtual Account', 'Kartu Kredit', 'E-Wallet') NOT NULL,
+    metode_bayar ENUM('Transfer Bank', 'Virtual Account', 'Kartu Kredit', 'E-Wallet', 'Cash') NOT NULL,
+    bank_name VARCHAR(50) NULL,
     referensi_pembayaran VARCHAR(100),
+    status_pembayaran ENUM('Pending', 'Verified', 'Rejected') DEFAULT 'Pending',
     FOREIGN KEY (no_tagihan) REFERENCES tagihan_premi(no_tagihan) ON DELETE CASCADE
 );
 
@@ -197,8 +200,8 @@ INSERT INTO tagihan_premi (no_tagihan, no_polis, periode_bulan, jumlah_tagihan, 
 ('INV-202505-001', 'POL-2025-00001', '2025-05', 750000.00, '2025-05-01', '2025-05-15', 'Paid'),
 ('INV-202505-002', 'POL-2025-00002', '2025-05', 1500000.00, '2025-05-01', '2025-05-15', 'Unpaid');
 
-INSERT INTO pembayaran_premi (no_tagihan, tanggal_bayar, nominal_bayar, metode_bayar, referensi_pembayaran) VALUES
-('INV-202505-001', '2025-05-12 10:30:00', 750000.00, 'Virtual Account', 'VA-BCA-987654321');
+INSERT INTO pembayaran_premi (no_tagihan, tanggal_bayar, nominal_bayar, metode_bayar, bank_name, referensi_pembayaran, status_pembayaran) VALUES
+('INV-202505-001', '2025-05-12 10:30:00', 750000.00, 'Virtual Account', 'BCA', 'VA-BCA-987654321', 'Verified');
 
 INSERT INTO klaim_medis (no_klaim, no_polis, id_tanggungan, id_faskes, kode_icd, tanggal_masuk, tanggal_keluar, jenis_perawatan, status_klaim, total_tagihan_faskes, total_dibayarkan_asuransi) VALUES
 ('KLM-202505-001', 'POL-2025-00001', NULL, 3, 'J06.9', '2025-05-05', '2025-05-05', 'Rawat Jalan', 'Approved', 450000.00, 450000.00),

@@ -32,7 +32,7 @@
                 <h3 style="color: white;">Bantuan</h3>
                 <ul>
                     <li><a href="#">Pusat Bantuan</a></li>
-                    <li><a href="#">Syarat & Ketentuan</a></li>
+                    <li><a href="syarat-ketentuan.php">Syarat & Ketentuan</a></li>
                     <li><a href="#">Kebijakan Privasi</a></li>
                     <li><a href="#">Cara Klaim</a></li>
                 </ul>
@@ -44,14 +44,6 @@
         </div>
     </footer>
 
-    <script>
-        const mobileMenuBtn = document.getElementById('mobile-menu');
-        const navMenu = document.getElementById('nav-menu');
-        if(mobileMenuBtn && navMenu) {
-            mobileMenuBtn.addEventListener('click', () => {
-                navMenu.classList.toggle('active');
-            });
-        }
-    </script>
+    <script src="layouts/js/script.js"></script>
 </body>
 </html>
