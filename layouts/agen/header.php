@@ -1,7 +1,7 @@
 <?php
 session_start();
-// Security check for role customer
-if(!isset($_SESSION['id_user']) || strtolower($_SESSION['role']) != 'customer'){
+// Security check for role agen
+if(!isset($_SESSION['id_user']) || strtolower($_SESSION['role']) != 'agen'){
     header("Location: /asuransi/login.php");
     exit();
 }
@@ -18,7 +18,7 @@ $foto_profil_header = $userHeader['foto_profil'] ?? null;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Dashboard - AsuransiKu</title>
+    <title>Agent Dashboard - AsuransiKu</title>
     <!-- CSS Universal -->
     <link rel="stylesheet" href="<?php echo $base_url; ?>/layouts/css/style.css?v=<?php echo time(); ?>">
     <!-- FontAwesome -->

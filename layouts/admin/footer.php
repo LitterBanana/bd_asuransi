@@ -1,11 +1,24 @@
-            </div> <!-- End of content-area -->
-            <div class="footer">
-                &copy; <?php echo date("Y"); ?> AsuransiKu. All rights reserved.
-            </div>
-        </div> <!-- End of main-content -->
-    </div> <!-- End of dashboard-container -->
-    
-    <script src="<?php echo $base_url; ?>/layouts/js/script.js"></script>
+            </div> <!-- End Content Area -->
+        </div> <!-- End Main Content Wrapper -->
+    </div> <!-- End Dashboard Container -->
+
+    <!-- Scripts -->
+    <script>
+        // Sidebar Toggle
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+        });
+    </script>
 
     <?php if (isset($_SESSION['toast_success'])): ?>
     <div id="toast-success" style="position: fixed; bottom: 20px; right: 20px; background: white; border-left: 4px solid var(--color-success); padding: 15px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px; z-index: 9999; animation: slideInRight 0.3s ease-out forwards; max-width: 350px;">

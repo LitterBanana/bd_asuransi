@@ -54,7 +54,7 @@ try {
     $id_agen = null; // Beli langsung tidak pakai agen
     $tanggal_terbit = date('Y-m-d');
     $tanggal_jatuh_tempo = date('Y-m-d', strtotime('+1 year')); // 1 tahun dari sekarang
-    $status_polis = 'Inforce';
+    $status_polis = 'Pending Approval';
     $total_premi_berjalan = 0.00;
 
     $stmt_polis = $conn->prepare("INSERT INTO polis (no_polis, id_pemegang, id_produk, id_agen, tanggal_terbit, tanggal_jatuh_tempo, status_polis, total_premi_berjalan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
@@ -74,11 +74,14 @@ try {
     $conn->commit();
     
     // Redirect ke halaman polis dengan pesan sukses
-    echo "<script>alert('Pembelian paket berhasil! Polis Anda telah diterbitkan. Silakan cek detail polis dan segera lakukan pembayaran premi pertama.'); window.location.href='polis/index.php';</script>";
-
+    $_SESSION['toast_success'] = 'Pengajuan pembelian paket berhasil! Polis Anda saat ini berstatus Pending dan sedang menunggu persetujuan Admin.';
+    header("Location: polis/index.php");
+    exit;
 } catch (Exception $e) {
     $conn->rollBack();
     error_log("Error proses beli: " . $e->getMessage());
-    echo "<script>alert('Terjadi kesalahan saat memproses pembelian paket. Silakan coba lagi nanti.'); window.history.back();</script>";
+    $_SESSION['toast_error'] = 'Terjadi kesalahan saat memproses pembelian paket. Silakan coba lagi nanti.';
+    header("Location: " . $_SERVER['HTTP_REFERER']);
+    exit;
 }
 ?>

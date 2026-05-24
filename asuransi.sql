@@ -47,6 +47,7 @@ CREATE TABLE kategori_penyakit (
 
 CREATE TABLE pemegang_polis (
     id_pemegang INT AUTO_INCREMENT PRIMARY KEY,
+    id_agen INT NULL,
     nik VARCHAR(16) UNIQUE NOT NULL,
     nama_lengkap VARCHAR(150) NOT NULL,
     tanggal_lahir DATE NOT NULL,
@@ -55,7 +56,8 @@ CREATE TABLE pemegang_polis (
     alamat TEXT NOT NULL,
     no_telepon VARCHAR(20),
     email VARCHAR(100) UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_agen) REFERENCES agen(id_agen) ON DELETE SET NULL
 );
 
 -- ==============================================================================
@@ -69,7 +71,7 @@ CREATE TABLE polis (
     id_agen INT NULL, 
     tanggal_terbit DATE NOT NULL,
     tanggal_jatuh_tempo DATE NOT NULL,
-    status_polis ENUM('Inforce', 'Lapse', 'Surrender', 'Claimed') DEFAULT 'Inforce',
+    status_polis ENUM('Pending Approval', 'Inforce', 'Lapse', 'Pending Cancellation', 'Surrender', 'Claimed', 'Rejected') DEFAULT 'Pending Approval',
     total_premi_berjalan DECIMAL(15,2) DEFAULT 0.00,
     FOREIGN KEY (id_pemegang) REFERENCES pemegang_polis(id_pemegang) ON DELETE CASCADE,
     FOREIGN KEY (id_produk) REFERENCES produk_asuransi(id_produk) ON DELETE RESTRICT,
@@ -84,6 +86,7 @@ CREATE TABLE tanggungan_polis (
     hubungan ENUM('Suami', 'Istri', 'Anak') NOT NULL,
     tanggal_lahir DATE NOT NULL,
     jenis_kelamin ENUM('L', 'P') NOT NULL,
+    status_tanggungan ENUM('Pending', 'Active', 'Pending Deletion', 'Rejected') DEFAULT 'Pending',
     FOREIGN KEY (no_polis) REFERENCES polis(no_polis) ON DELETE CASCADE
 );
 
@@ -106,6 +109,7 @@ CREATE TABLE pembayaran_premi (
     metode_bayar ENUM('Transfer Bank', 'Virtual Account', 'Kartu Kredit', 'E-Wallet', 'Cash') NOT NULL,
     bank_name VARCHAR(50) NULL,
     referensi_pembayaran VARCHAR(100),
+    bukti_pembayaran VARCHAR(255) NULL,
     status_pembayaran ENUM('Pending', 'Verified', 'Rejected') DEFAULT 'Pending',
     FOREIGN KEY (no_tagihan) REFERENCES tagihan_premi(no_tagihan) ON DELETE CASCADE
 );
@@ -201,7 +205,7 @@ INSERT INTO tagihan_premi (no_tagihan, no_polis, periode_bulan, jumlah_tagihan, 
 ('INV-202505-002', 'POL-2025-00002', '2025-05', 1500000.00, '2025-05-01', '2025-05-15', 'Unpaid');
 
 INSERT INTO pembayaran_premi (no_tagihan, tanggal_bayar, nominal_bayar, metode_bayar, bank_name, referensi_pembayaran, status_pembayaran) VALUES
-('INV-202505-001', '2025-05-12 10:30:00', 750000.00, 'Virtual Account', 'BCA', 'VA-BCA-987654321', 'Verified');
+('INV-202505-001', '2025-06-12 10:30:00', 750000.00, 'Virtual Account', 'BCA', 'VA-BCA-987654321', 'Verified');
 
 INSERT INTO klaim_medis (no_klaim, no_polis, id_tanggungan, id_faskes, kode_icd, tanggal_masuk, tanggal_keluar, jenis_perawatan, status_klaim, total_tagihan_faskes, total_dibayarkan_asuransi) VALUES
 ('KLM-202505-001', 'POL-2025-00001', NULL, 3, 'J06.9', '2025-05-05', '2025-05-05', 'Rawat Jalan', 'Approved', 450000.00, 450000.00),

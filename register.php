@@ -45,6 +45,11 @@
                             <input type="password" name="password" id="password" placeholder="Masukkan password" required>
                         </div>
 
+                        <div class="input-group">
+                            <label for="kode_agen">Kode Agen / Referral (Opsional)</label>
+                            <input type="text" name="kode_agen" id="kode_agen" placeholder="Contoh: AG-001" value="<?php echo isset($_GET['ref']) ? htmlspecialchars($_GET['ref']) : ''; ?>" style="width: 100%; padding: 14px 16px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 15px; font-family: inherit; transition: all 0.3s ease; background: #f9fafb; color: var(--color-dark);">
+                        </div>
+
                         <input type="hidden" name="role" id="role" value="Customer">
 
                         <button type="submit" name="register">Register</button>
