@@ -201,7 +201,7 @@
                             <?php else: ?>
                                 <span style="font-size: 12px; color: #94a3b8; display: inline-block; margin-right: 5px;">Tidak ada aksi</span>
                             <?php endif; ?>
-                            <a href="print.php?no_polis=<?php echo urlencode($row['no_polis']); ?>" target="_blank" class="btn-admin btn-admin-sm btn-admin-ghost" title="Cetak Polis">
+                            <a href="print.php?no_polis=<?php echo urlencode($row['no_polis']); ?>" class="btn-admin btn-admin-sm btn-admin-ghost" title="Cetak Polis">
                                 <i class="fa-solid fa-print"></i> Cetak
                             </a>
                         </td>

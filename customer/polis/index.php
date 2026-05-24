@@ -268,7 +268,7 @@
             </div>
         </div>
         <div style="display: flex; gap: 10px;">
-            <a href="print.php?no_polis=<?php echo urlencode($polis['no_polis']); ?>" target="_blank" class="btn" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); font-weight: 600; padding: 10px 20px; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center;"><i class="fa-solid fa-print" style="margin-right: 5px;"></i> Cetak Sertifikat</a>
+            <a href="print.php?no_polis=<?php echo urlencode($polis['no_polis']); ?>" class="btn" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); font-weight: 600; padding: 10px 20px; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center;"><i class="fa-solid fa-print" style="margin-right: 5px;"></i> Cetak Sertifikat</a>
             <button onclick="openEditModal()" class="btn" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); font-weight: 600; padding: 10px 20px; border-radius: 8px; cursor: pointer;"><i class="fa-solid fa-pen-to-square" style="margin-right: 5px;"></i> Edit Keterangan</button>
             <?php 
                 $status_tidak_bisa_batal = ['Pending Cancellation', 'Surrender', 'Lapse', 'Claimed', 'Rejected'];

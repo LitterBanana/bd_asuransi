@@ -180,7 +180,7 @@
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+<div class="dashboard-grid" style="margin-bottom: 25px;">
     <!-- Pembayaran Terbaru -->
     <div class="admin-card">
         <div class="admin-card-header">

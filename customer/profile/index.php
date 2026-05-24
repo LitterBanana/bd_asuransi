@@ -131,7 +131,7 @@ $has_profile = !empty($profile['nik']);
 
     <?php echo $message; ?>
 
-    <div style="display: grid; grid-template-columns: 1fr 2.5fr; gap: 30px; align-items: start;">
+    <div class="profile-layout">
         
         <!-- Left Sidebar: Profile Summary -->
         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); padding: 24px; text-align: center;">
@@ -188,7 +188,7 @@ $has_profile = !empty($profile['nik']);
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="profile-form-grid">
                     <div style="margin-bottom: 16px;">
                         <label style="display: block; margin-bottom: 6px; color: #0f172a; font-size: 14px; font-weight: 500;">NIK</label>
                         <input type="text" name="nik" value="<?php echo htmlspecialchars($profile['nik']); ?>" <?php echo $has_profile ? 'readonly' : 'required placeholder="Masukkan 16 digit NIK"'; ?> style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; background: <?php echo $has_profile ? '#f8fafc' : '#ffffff'; ?>; color: <?php echo $has_profile ? '#94a3b8' : '#0f172a'; ?>; font-size: 14px; outline: none; box-sizing: border-box; <?php echo $has_profile ? 'cursor: not-allowed;' : ''; ?>">

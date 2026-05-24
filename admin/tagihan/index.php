@@ -194,7 +194,7 @@
                                     <?php if ($status === 'Verified') echo '<i class="fa-solid fa-check-double" style="color:#10b981;"></i> Lunas'; else echo 'Ditolak'; ?>
                                 </span>
                             <?php endif; ?>
-                            <a href="print.php?no_tagihan=<?php echo urlencode($row['no_tagihan']); ?>" target="_blank" class="btn-admin btn-admin-sm btn-admin-ghost" title="Cetak Tagihan" style="margin-left: 5px;">
+                            <a href="print.php?no_tagihan=<?php echo urlencode($row['no_tagihan']); ?>" class="btn-admin btn-admin-sm btn-admin-ghost" title="Cetak Tagihan" style="margin-left: 5px;">
                                 <i class="fa-solid fa-print"></i> Cetak
                             </a>
                         </td>

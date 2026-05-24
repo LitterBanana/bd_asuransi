@@ -808,6 +808,7 @@ body {
     margin-bottom: 25px;
     display: flex;
     flex-direction: column;
+    min-width: 0; /* Prevent CSS grid blowout */
 }
 .admin-card-header {
     padding: 20px 25px;
@@ -828,6 +829,8 @@ body {
 .admin-card-body {
     padding: 0; 
     flex: 1;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .admin-table {
@@ -853,4 +856,77 @@ body {
 }
 .admin-table tbody tr:hover {
     background-color: #f8fafc;
+}
+
+/* Profile Layouts */
+.profile-layout {
+    display: grid;
+    grid-template-columns: 1fr 2.5fr;
+    gap: 30px;
+    align-items: start;
+}
+.profile-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .admin-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .admin-table th, .admin-table td {
+        padding: 10px 15px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+    .admin-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    .admin-card-header .btn, .admin-card-header .btn-admin {
+        width: 100%;
+        justify-content: center;
+    }
+    .admin-top-header {
+        padding: 0 15px;
+    }
+    .content-area {
+        padding: 15px;
+    }
+    
+    /* Responsive Filter Forms */
+    form[method="GET"] {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    form[method="GET"] input,
+    form[method="GET"] select,
+    form[method="GET"] button {
+        width: 100% !important;
+        min-width: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    .faskes-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .faskes-header-alt {
+        padding: 60px 15px 40px;
+    }
+    .faskes-header-alt h1 {
+        font-size: 28px;
+    }
+    
+    .profile-layout {
+        grid-template-columns: 1fr;
+    }
+    .profile-form-grid {
+        grid-template-columns: 1fr;
+    }
 }

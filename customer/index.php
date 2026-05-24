@@ -7,12 +7,27 @@
     $id_agen_referral = null;
     
     if ($username) {
-        $stmt = $conn->prepare("SELECT id_pemegang, id_agen FROM users WHERE username = ?");
+        $stmt = $conn->prepare("SELECT id_pemegang FROM users WHERE username = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
         if ($user) {
             $id_pemegang = $user['id_pemegang'];
-            $id_agen_referral = $user['id_agen'];
+        }
+    }
+    
+    if ($id_pemegang) {
+        $stmtAgenPolis = $conn->prepare("SELECT id_agen FROM polis WHERE id_pemegang = ? AND id_agen IS NOT NULL LIMIT 1");
+        $stmtAgenPolis->execute([$id_pemegang]);
+        $agenPolis = $stmtAgenPolis->fetch();
+        if ($agenPolis) {
+            $id_agen_referral = $agenPolis['id_agen'];
+        } else {
+            $stmtAgenPem = $conn->prepare("SELECT id_agen FROM pemegang_polis WHERE id_pemegang = ? AND id_agen IS NOT NULL");
+            $stmtAgenPem->execute([$id_pemegang]);
+            $agenPem = $stmtAgenPem->fetch();
+            if ($agenPem) {
+                $id_agen_referral = $agenPem['id_agen'];
+            }
         }
     }
 
@@ -131,7 +146,7 @@
 
 <?php echo $referralMsg; ?>
 
-<?php if($polisAktif && !$is_referral_used): ?>
+<?php if($polisAktif && !$is_referral_used && !$agen_referral): ?>
 <div class="admin-card" style="margin-bottom: 25px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 4px solid #3b82f6;">
     <div class="admin-card-body" style="padding: 20px; display: flex; align-items: center; justify-content: space-between;">
         <div>
@@ -186,7 +201,7 @@
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+<div class="dashboard-grid" style="margin-bottom: 25px;">
     <!-- Payment Progress -->
     <div class="admin-card" style="display: flex; flex-direction: column; height: 100%;">
         <div class="admin-card-header">

@@ -136,7 +136,7 @@
                         
                         <?php if ($row['no_polis_terbaru']): ?>
                             <a href="print.php?no_polis=<?php echo urlencode($row['no_polis_terbaru']); ?>" class="btn" style="background: #3b82f6; color: white; padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 11px;" title="Cetak Polis Terbaru">
-                                <i class="fa-solid fa-print"></i> Cetak
+                                <i class="fa-solid fa-print"></i> Cetak Polis
                             </a>
                         <?php else: ?>
                             <span style="color: #cbd5e1;">-</span>

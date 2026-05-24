@@ -35,7 +35,7 @@ $nama_bulan = date('F Y', strtotime($bulan . '-01'));
             </div>
             <h3 style="margin: 0 0 10px 0; color: #1e293b;">Laporan Pendapatan</h3>
             <p style="margin: 0 0 20px 0; color: #64748b; font-size: 13px;">Daftar seluruh premi masuk secara total dari semua agen/nasabah.</p>
-            <a href="print_pendapatan.php?bulan=<?php echo urlencode($bulan); ?>" target="_blank" class="btn" style="display: inline-block; background: #3b82f6; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; width: 100%; box-sizing: border-box;">
+            <a href="print_pendapatan.php?bulan=<?php echo urlencode($bulan); ?>" class="btn" style="display: inline-block; background: #3b82f6; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; width: 100%; box-sizing: border-box;">
                 <i class="fa-solid fa-print"></i> Cetak Laporan
             </a>
         </div>
@@ -49,7 +49,7 @@ $nama_bulan = date('F Y', strtotime($bulan . '-01'));
             </div>
             <h3 style="margin: 0 0 10px 0; color: #1e293b;">Laporan Pertumbuhan</h3>
             <p style="margin: 0 0 20px 0; color: #64748b; font-size: 13px;">Total akuisisi nasabah & polis baru di seluruh cabang.</p>
-            <a href="print_pertumbuhan.php?bulan=<?php echo urlencode($bulan); ?>" target="_blank" class="btn" style="display: inline-block; background: #10b981; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; width: 100%; box-sizing: border-box;">
+            <a href="print_pertumbuhan.php?bulan=<?php echo urlencode($bulan); ?>" class="btn" style="display: inline-block; background: #10b981; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; width: 100%; box-sizing: border-box;">
                 <i class="fa-solid fa-print"></i> Cetak Laporan
             </a>
         </div>
@@ -63,7 +63,7 @@ $nama_bulan = date('F Y', strtotime($bulan . '-01'));
             </div>
             <h3 style="margin: 0 0 10px 0; color: #1e293b;">Laporan Klaim</h3>
             <p style="margin: 0 0 20px 0; color: #64748b; font-size: 13px;">Memantau seluruh klaim medis yang diajukan beserta statusnya.</p>
-            <a href="print_klaim.php?bulan=<?php echo urlencode($bulan); ?>" target="_blank" class="btn" style="display: inline-block; background: #f59e0b; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; width: 100%; box-sizing: border-box;">
+            <a href="print_klaim.php?bulan=<?php echo urlencode($bulan); ?>" class="btn" style="display: inline-block; background: #f59e0b; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; width: 100%; box-sizing: border-box;">
                 <i class="fa-solid fa-print"></i> Cetak Laporan
             </a>
         </div>

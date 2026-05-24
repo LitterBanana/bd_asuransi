@@ -83,7 +83,7 @@
                                 <i class="fa-solid fa-credit-card" style="margin-right: 5px;"></i> Bayar
                             </a>
                         <?php endif; ?>
-                        <a href="print.php?no_tagihan=<?php echo urlencode($row['no_tagihan']); ?>" target="_blank" class="btn" style="background: white; color: #475569; padding: 6px 15px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; display: inline-block; border: 1px solid #cbd5e1; margin-left: 5px;">
+                        <a href="print.php?no_tagihan=<?php echo urlencode($row['no_tagihan']); ?>" class="btn" style="background: white; color: #475569; padding: 6px 15px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; display: inline-block; border: 1px solid #cbd5e1; margin-left: 5px;">
                             <i class="fa-solid fa-print" style="margin-right: 5px;"></i> Cetak
                         </a>
                     </td>
