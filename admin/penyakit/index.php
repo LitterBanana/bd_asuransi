@@ -71,6 +71,64 @@
             }
             echo "<script>window.location.href='index.php';</script>";
             exit;
+
+        } elseif ($action === 'import_csv') {
+            if (isset($_FILES['file_csv']) && $_FILES['file_csv']['error'] == UPLOAD_ERR_OK) {
+                $file_tmp = $_FILES['file_csv']['tmp_name'];
+                
+                if (($handle = fopen($file_tmp, "r")) !== FALSE) {
+                    $conn->beginTransaction();
+                    $row_count = 0;
+                    $sukses = 0;
+                    
+                    try {
+                        // Baca baris header (abaikan datanya)
+                        $header = fgetcsv($handle, 1000, ",");
+                        
+                        $kategori_valid = ['Ringan', 'Sedang', 'Berat', 'Kritis'];
+                        
+                        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                            $row_count++;
+                            // Format: KodeICD(0), NamaPenyakit(1), KategoriBerat(2)
+                            if (count($data) < 3) continue;
+
+                            $kode_icd = trim($data[0]);
+                            $nama_penyakit = trim($data[1]);
+                            $kategori_berat = trim($data[2]);
+
+                            if (empty($kode_icd) || empty($nama_penyakit)) continue;
+
+                            // Validasi kategori berat
+                            if (!in_array($kategori_berat, $kategori_valid)) {
+                                throw new Exception("Error baris $row_count: Kategori Berat '$kategori_berat' tidak valid. Gunakan: Ringan, Sedang, Berat, atau Kritis.");
+                            }
+
+                            // Cek duplikasi kode_icd
+                            $stmt_cek = $conn->prepare("SELECT kode_icd FROM kategori_penyakit WHERE kode_icd = ?");
+                            $stmt_cek->execute([$kode_icd]);
+                            if ($stmt_cek->rowCount() > 0) throw new Exception("Duplikat pada baris $row_count: Kode ICD '$kode_icd' sudah ada.");
+
+                            // Insert
+                            $stmt = $conn->prepare("INSERT INTO kategori_penyakit (kode_icd, nama_penyakit, kategori_berat) VALUES (?, ?, ?)");
+                            $stmt->execute([$kode_icd, $nama_penyakit, $kategori_berat]);
+                            $sukses++;
+                        }
+                        $conn->commit();
+                        $_SESSION['toast_success'] = "Import Berhasil! $sukses Kategori Penyakit baru telah ditambahkan.";
+
+                    } catch (Exception $e) {
+                        $conn->rollBack();
+                        $_SESSION['toast_error'] = "Gagal Import. Dibatalkan seluruhnya. " . $e->getMessage();
+                    }
+                    fclose($handle);
+                } else {
+                    $_SESSION['toast_error'] = "Gagal membaca file CSV.";
+                }
+            } else {
+                $_SESSION['toast_error'] = "File tidak ditemukan atau terjadi error saat upload.";
+            }
+            echo "<script>window.location.href='index.php';</script>";
+            exit;
         }
     }
 
@@ -124,9 +182,14 @@
             <?php endif; ?>
         </form>
 
-        <button onclick="openCreateModal()" class="btn-admin btn-admin-primary" style="padding: 10px 20px;">
-            <i class="fa-solid fa-plus"></i> Tambah Penyakit
-        </button>
+        <div style="display: flex; gap: 10px; height: 100%; align-items: center;">
+            <button onclick="openImportModal()" class="btn-admin btn-admin-ghost" style="height: 100%;">
+                <i class="fa-solid fa-file-csv" style="color: #10b981;"></i> Import CSV
+            </button>
+            <button onclick="openCreateModal()" class="btn-admin btn-admin-primary" style="padding: 10px 20px;">
+                <i class="fa-solid fa-plus"></i> Tambah Penyakit
+            </button>
+        </div>
     </div>
 </div>
 
@@ -248,7 +311,46 @@
     </div>
 </div>
 
+<!-- MODAL IMPORT CSV PENYAKIT -->
+<div id="modalImportPenyakit" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="admin-card animate-fade-in-up" style="width: 100%; max-width: 500px; margin: 20px;">
+        <div class="admin-card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0;">
+            <h3 style="color: #1e293b;"><i class="fa-solid fa-file-import" style="color: #10b981; margin-right: 8px;"></i> Import Kategori Penyakit (CSV)</h3>
+            <button onclick="closeModal('modalImportPenyakit')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
+        </div>
+        <div class="admin-card-body" style="padding: 20px;">
+            
+            <div style="background: #fffbeb; padding: 15px; border-radius: 6px; border: 1px solid #fde68a; margin-bottom: 20px;">
+                <h4 style="font-size: 13px; color: #b45309; margin: 0 0 5px 0;">Instruksi Format CSV:</h4>
+                <p style="font-size: 12px; color: #92400e; margin: 0 0 10px 0;">Sistem akan melewati (mengabaikan) baris pertama karena dianggap sebagai Judul Header. Pastikan urutan kolom di file CSV Anda <b>wajib</b> seperti ini:</p>
+                <div style="background: #fff; border: 1px dashed #d97706; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 11px; color: #451a03; overflow-x: auto;">
+                    Kode ICD, Nama Penyakit, Kategori Berat<br>
+                    J00, Acute nasopharyngitis (common cold), Ringan<br>
+                    I21, Acute myocardial infarction, Kritis
+                </div>
+                <p style="font-size: 11px; color: #92400e; margin: 10px 0 0 0;"><b>Kategori Berat</b> yang valid: <code>Ringan</code>, <code>Sedang</code>, <code>Berat</code>, <code>Kritis</code></p>
+            </div>
+
+            <form method="POST" action="" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="import_csv">
+                
+                <div class="input-group" style="margin-bottom: 25px; text-align: center; padding: 30px 10px; border: 2px dashed #cbd5e1; border-radius: 8px; background: #f8fafc;">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 32px; color: #94a3b8; margin-bottom: 10px;"></i><br>
+                    <input type="file" name="file_csv" accept=".csv" required style="font-size: 13px; color: #475569;">
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" onclick="closeModal('modalImportPenyakit')" class="btn-admin btn-admin-lg btn-admin-ghost">Batal</button>
+                    <button type="submit" class="btn-admin btn-admin-lg btn-admin-success">Mulai Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
+    function openImportModal() { document.getElementById('modalImportPenyakit').style.display = 'flex'; }
+
     function openCreateModal() {
         document.getElementById('modalFormTitle').textContent = 'Tambah Penyakit Baru';
         document.getElementById('formAction').value = 'create';

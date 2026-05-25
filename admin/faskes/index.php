@@ -81,6 +81,73 @@
             }
             echo "<script>window.location.href='index.php';</script>";
             exit;
+
+        } elseif ($action === 'import_csv') {
+            if (isset($_FILES['file_csv']) && $_FILES['file_csv']['error'] == UPLOAD_ERR_OK) {
+                $file_tmp = $_FILES['file_csv']['tmp_name'];
+                
+                if (($handle = fopen($file_tmp, "r")) !== FALSE) {
+                    $conn->beginTransaction();
+                    $row_count = 0;
+                    $sukses = 0;
+                    
+                    try {
+                        // Baca baris header (abaikan datanya)
+                        $header = fgetcsv($handle, 1000, ",");
+                        
+                        $tingkat_valid = ['Klinik Pratama', 'Klinik Utama', 'RS Tipe C', 'RS Tipe B', 'RS Tipe A'];
+                        $status_valid = ['Aktif', 'Putus Kontrak'];
+                        
+                        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                            $row_count++;
+                            // Format: KodeFaskes(0), NamaFaskes(1), TingkatFaskes(2), Kota(3), Alamat(4), StatusKerjasama(5)
+                            if (count($data) < 6) continue;
+
+                            $kode_faskes = trim($data[0]);
+                            $nama_faskes = trim($data[1]);
+                            $tingkat_faskes = trim($data[2]);
+                            $kota = trim($data[3]);
+                            $alamat = trim($data[4]);
+                            $status_kerjasama = trim($data[5]);
+
+                            if (empty($kode_faskes) || empty($nama_faskes)) continue;
+
+                            // Validasi tingkat faskes
+                            if (!in_array($tingkat_faskes, $tingkat_valid)) {
+                                throw new Exception("Error baris $row_count: Tingkat Faskes '$tingkat_faskes' tidak valid. Gunakan: Klinik Pratama, Klinik Utama, RS Tipe C, RS Tipe B, atau RS Tipe A.");
+                            }
+
+                            // Validasi status kerjasama
+                            if (!in_array($status_kerjasama, $status_valid)) {
+                                throw new Exception("Error baris $row_count: Status Kerjasama '$status_kerjasama' tidak valid. Gunakan: Aktif atau Putus Kontrak.");
+                            }
+
+                            // Cek duplikasi kode_faskes
+                            $stmt_cek = $conn->prepare("SELECT kode_faskes FROM faskes WHERE kode_faskes = ?");
+                            $stmt_cek->execute([$kode_faskes]);
+                            if ($stmt_cek->rowCount() > 0) throw new Exception("Duplikat pada baris $row_count: Kode Faskes '$kode_faskes' sudah ada.");
+
+                            // Insert
+                            $stmt = $conn->prepare("INSERT INTO faskes (kode_faskes, nama_faskes, tingkat_faskes, kota, alamat, status_kerjasama) VALUES (?, ?, ?, ?, ?, ?)");
+                            $stmt->execute([$kode_faskes, $nama_faskes, $tingkat_faskes, $kota, $alamat, $status_kerjasama]);
+                            $sukses++;
+                        }
+                        $conn->commit();
+                        $_SESSION['toast_success'] = "Import Berhasil! $sukses Fasilitas Kesehatan baru telah ditambahkan.";
+
+                    } catch (Exception $e) {
+                        $conn->rollBack();
+                        $_SESSION['toast_error'] = "Gagal Import. Dibatalkan seluruhnya. " . $e->getMessage();
+                    }
+                    fclose($handle);
+                } else {
+                    $_SESSION['toast_error'] = "Gagal membaca file CSV.";
+                }
+            } else {
+                $_SESSION['toast_error'] = "File tidak ditemukan atau terjadi error saat upload.";
+            }
+            echo "<script>window.location.href='index.php';</script>";
+            exit;
         }
     }
 
@@ -136,9 +203,14 @@
             <?php endif; ?>
         </form>
 
-        <button onclick="openCreateModal()" class="btn-admin btn-admin-primary" style="padding: 10px 20px;">
-            <i class="fa-solid fa-plus"></i> Tambah Faskes Baru
-        </button>
+        <div style="display: flex; gap: 10px; height: 100%; align-items: center;">
+            <button onclick="openImportModal()" class="btn-admin btn-admin-ghost" style="height: 100%;">
+                <i class="fa-solid fa-file-csv" style="color: #10b981;"></i> Import CSV
+            </button>
+            <button onclick="openCreateModal()" class="btn-admin btn-admin-primary" style="padding: 10px 20px;">
+                <i class="fa-solid fa-plus"></i> Tambah Faskes Baru
+            </button>
+        </div>
     </div>
 </div>
 
@@ -300,7 +372,46 @@
     </div>
 </div>
 
+<!-- MODAL IMPORT CSV FASKES -->
+<div id="modalImportFaskes" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="admin-card animate-fade-in-up" style="width: 100%; max-width: 550px; margin: 20px;">
+        <div class="admin-card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0;">
+            <h3 style="color: #1e293b;"><i class="fa-solid fa-file-import" style="color: #10b981; margin-right: 8px;"></i> Import Data Faskes (CSV)</h3>
+            <button onclick="closeModal('modalImportFaskes')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
+        </div>
+        <div class="admin-card-body" style="padding: 20px;">
+            
+            <div style="background: #fffbeb; padding: 15px; border-radius: 6px; border: 1px solid #fde68a; margin-bottom: 20px;">
+                <h4 style="font-size: 13px; color: #b45309; margin: 0 0 5px 0;">Instruksi Format CSV:</h4>
+                <p style="font-size: 12px; color: #92400e; margin: 0 0 10px 0;">Sistem akan melewati (mengabaikan) baris pertama karena dianggap sebagai Judul Header. Pastikan urutan kolom di file CSV Anda <b>wajib</b> seperti ini:</p>
+                <div style="background: #fff; border: 1px dashed #d97706; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 11px; color: #451a03; overflow-x: auto;">
+                    Kode Faskes, Nama Faskes, Tingkat, Kota, Alamat, Status Kerjasama<br>
+                    RS-010, RS Siloam Kebon Jeruk, RS Tipe B, Jakarta, Jl. Perjuangan No.8, Aktif<br>
+                    KL-005, Klinik Sehat Sentosa, Klinik Pratama, Bandung, Jl. Merdeka No.12, Aktif
+                </div>
+                <p style="font-size: 11px; color: #92400e; margin: 10px 0 0 0;"><b>Tingkat</b>: <code>Klinik Pratama</code>, <code>Klinik Utama</code>, <code>RS Tipe C</code>, <code>RS Tipe B</code>, <code>RS Tipe A</code><br><b>Status</b>: <code>Aktif</code> atau <code>Putus Kontrak</code></p>
+            </div>
+
+            <form method="POST" action="" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="import_csv">
+                
+                <div class="input-group" style="margin-bottom: 25px; text-align: center; padding: 30px 10px; border: 2px dashed #cbd5e1; border-radius: 8px; background: #f8fafc;">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 32px; color: #94a3b8; margin-bottom: 10px;"></i><br>
+                    <input type="file" name="file_csv" accept=".csv" required style="font-size: 13px; color: #475569;">
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" onclick="closeModal('modalImportFaskes')" class="btn-admin btn-admin-lg btn-admin-ghost">Batal</button>
+                    <button type="submit" class="btn-admin btn-admin-lg btn-admin-success">Mulai Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
+    function openImportModal() { document.getElementById('modalImportFaskes').style.display = 'flex'; }
+
     function openCreateModal() {
         document.getElementById('modalFormTitle').textContent = 'Tambah Faskes Baru';
         document.getElementById('formAction').value = 'create';

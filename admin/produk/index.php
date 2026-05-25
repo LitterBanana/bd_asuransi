@@ -80,6 +80,66 @@
             }
             echo "<script>window.location.href='index.php';</script>";
             exit;
+
+        } elseif ($action === 'import_csv') {
+            if (isset($_FILES['file_csv']) && $_FILES['file_csv']['error'] == UPLOAD_ERR_OK) {
+                $file_tmp = $_FILES['file_csv']['tmp_name'];
+                
+                if (($handle = fopen($file_tmp, "r")) !== FALSE) {
+                    $conn->beginTransaction();
+                    $row_count = 0;
+                    $sukses = 0;
+                    
+                    try {
+                        // Baca baris header (abaikan datanya)
+                        $header = fgetcsv($handle, 1000, ",");
+                        
+                        $kategori_valid = ['Individu', 'Keluarga', 'Kumpulan/Perusahaan'];
+                        
+                        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                            $row_count++;
+                            // Format: KodeProduk(0), NamaProduk(1), JenisKategori(2), LimitTahunan(3), PremiDasar(4)
+                            if (count($data) < 5) continue;
+
+                            $kode_produk = trim($data[0]);
+                            $nama_produk = trim($data[1]);
+                            $jenis_kategori = trim($data[2]);
+                            $limit_tahunan = floatval($data[3]);
+                            $premi_dasar = floatval($data[4]);
+
+                            if (empty($kode_produk) || empty($nama_produk)) continue;
+
+                            // Validasi kategori
+                            if (!in_array($jenis_kategori, $kategori_valid)) {
+                                throw new Exception("Error baris $row_count: Jenis Kategori '$jenis_kategori' tidak valid. Gunakan: Individu, Keluarga, atau Kumpulan/Perusahaan.");
+                            }
+
+                            // Cek duplikasi kode_produk
+                            $stmt_cek = $conn->prepare("SELECT kode_produk FROM produk_asuransi WHERE kode_produk = ?");
+                            $stmt_cek->execute([$kode_produk]);
+                            if ($stmt_cek->rowCount() > 0) throw new Exception("Duplikat pada baris $row_count: Kode Produk '$kode_produk' sudah ada.");
+
+                            // Insert
+                            $stmt = $conn->prepare("INSERT INTO produk_asuransi (kode_produk, nama_produk, jenis_kategori, limit_tahunan, premi_dasar) VALUES (?, ?, ?, ?, ?)");
+                            $stmt->execute([$kode_produk, $nama_produk, $jenis_kategori, $limit_tahunan, $premi_dasar]);
+                            $sukses++;
+                        }
+                        $conn->commit();
+                        $_SESSION['toast_success'] = "Import Berhasil! $sukses Produk Asuransi baru telah ditambahkan.";
+
+                    } catch (Exception $e) {
+                        $conn->rollBack();
+                        $_SESSION['toast_error'] = "Gagal Import. Dibatalkan seluruhnya. " . $e->getMessage();
+                    }
+                    fclose($handle);
+                } else {
+                    $_SESSION['toast_error'] = "Gagal membaca file CSV.";
+                }
+            } else {
+                $_SESSION['toast_error'] = "File tidak ditemukan atau terjadi error saat upload.";
+            }
+            echo "<script>window.location.href='index.php';</script>";
+            exit;
         }
     }
 
@@ -132,9 +192,14 @@
             <?php endif; ?>
         </form>
 
-        <button onclick="openCreateModal()" class="btn-admin btn-admin-primary" style="padding: 10px 20px;">
-            <i class="fa-solid fa-plus"></i> Tambah Plan Baru
-        </button>
+        <div style="display: flex; gap: 10px; height: 100%; align-items: center;">
+            <button onclick="openImportModal()" class="btn-admin btn-admin-ghost" style="height: 100%;">
+                <i class="fa-solid fa-file-csv" style="color: #10b981;"></i> Import CSV
+            </button>
+            <button onclick="openCreateModal()" class="btn-admin btn-admin-primary" style="padding: 10px 20px;">
+                <i class="fa-solid fa-plus"></i> Tambah Plan Baru
+            </button>
+        </div>
     </div>
 </div>
 
@@ -272,7 +337,46 @@
     </div>
 </div>
 
+<!-- MODAL IMPORT CSV PRODUK -->
+<div id="modalImportProduk" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="admin-card animate-fade-in-up" style="width: 100%; max-width: 500px; margin: 20px;">
+        <div class="admin-card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0;">
+            <h3 style="color: #1e293b;"><i class="fa-solid fa-file-import" style="color: #10b981; margin-right: 8px;"></i> Import Data Produk (CSV)</h3>
+            <button onclick="closeModal('modalImportProduk')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #64748b;">&times;</button>
+        </div>
+        <div class="admin-card-body" style="padding: 20px;">
+            
+            <div style="background: #fffbeb; padding: 15px; border-radius: 6px; border: 1px solid #fde68a; margin-bottom: 20px;">
+                <h4 style="font-size: 13px; color: #b45309; margin: 0 0 5px 0;">Instruksi Format CSV:</h4>
+                <p style="font-size: 12px; color: #92400e; margin: 0 0 10px 0;">Sistem akan melewati (mengabaikan) baris pertama karena dianggap sebagai Judul Header. Pastikan urutan kolom di file CSV Anda <b>wajib</b> seperti ini:</p>
+                <div style="background: #fff; border: 1px dashed #d97706; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 11px; color: #451a03; overflow-x: auto;">
+                    Kode Produk, Nama Produk, Jenis Kategori, Limit Tahunan, Premi Dasar<br>
+                    IND-001, Kesehatan Individu Basic, Individu, 50000000, 250000<br>
+                    KEL-001, Kesehatan Keluarga Silver, Keluarga, 100000000, 500000
+                </div>
+                <p style="font-size: 11px; color: #92400e; margin: 10px 0 0 0;"><b>Jenis Kategori</b> yang valid: <code>Individu</code>, <code>Keluarga</code>, <code>Kumpulan/Perusahaan</code></p>
+            </div>
+
+            <form method="POST" action="" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="import_csv">
+                
+                <div class="input-group" style="margin-bottom: 25px; text-align: center; padding: 30px 10px; border: 2px dashed #cbd5e1; border-radius: 8px; background: #f8fafc;">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 32px; color: #94a3b8; margin-bottom: 10px;"></i><br>
+                    <input type="file" name="file_csv" accept=".csv" required style="font-size: 13px; color: #475569;">
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" onclick="closeModal('modalImportProduk')" class="btn-admin btn-admin-lg btn-admin-ghost">Batal</button>
+                    <button type="submit" class="btn-admin btn-admin-lg btn-admin-success">Mulai Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
+    function openImportModal() { document.getElementById('modalImportProduk').style.display = 'flex'; }
+
     function openCreateModal() {
         document.getElementById('modalFormTitle').textContent = 'Tambah Produk Baru';
         document.getElementById('formAction').value = 'create';
